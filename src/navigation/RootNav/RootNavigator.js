@@ -13,7 +13,7 @@ const RootNavigator = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName="Auth"
+      initialRouteName="AuthNav"
       screenOptions={{
         headerShown: false,
         headerStyle: {
@@ -34,8 +34,8 @@ const RootNavigator = () => {
         ),
       }}
     >
-      <Stack.Screen name={"Auth"} component={AuthNavigator} />
-      <Stack.Screen name={"Home"} component={HomeNavigator} />
+      <Stack.Screen name={"AuthNav"} component={AuthNavigator} />
+      <Stack.Screen name={"HomeNav"} component={HomeNavigator} />
     </Stack.Navigator>
   );
 };

@@ -18,7 +18,7 @@ const Login = () => {
   const { isDarkMode } = useTheme();
 
   const handleLogin = () => {
-    navigation.getParent().navigate("Home");
+    navigation.getParent().navigate("HomeNav");
   };
 
   return (
