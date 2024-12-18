@@ -1,10 +1,14 @@
-import { StyleSheet, Text, View, Image, Button } from "react-native";
-import React from "react";
+import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import React, { useContext } from "react";
 
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "@context/ThemeContext";
+import { LIGHTMODE_COLORS, DARKMODE_COLORS } from "src/colors/colors";
+import CartContext from "@context/CartContext";
 
-const CartItem = ({ name, price, image, description, count = 1 }) => {
+const CartItem = ({ name, price, image, description, count = 1, item }) => {
   const { isDarkMode } = useTheme();
+  const [cart, addToCart, removeFromCart] = useContext(CartContext);
+
   return (
     <View style={isDarkMode ? darkStyles.card : styles.card}>
       {/* Image */}
@@ -25,6 +29,16 @@ const CartItem = ({ name, price, image, description, count = 1 }) => {
           <Text style={isDarkMode ? darkStyles.price : styles.price}>
             {count} x {price} KWD = {(count * price).toFixed(3)} KWD
           </Text>
+          <TouchableOpacity
+            style={isDarkMode ? darkStyles.removeButton : styles.removeButton}
+            onPress={() => removeFromCart(item)}
+          >
+            <Text
+              style={isDarkMode ? darkStyles.buttonText : styles.buttonText}
+            >
+              -
+            </Text>
+          </TouchableOpacity>
         </View>
         {/* <Button title="ADD TO CART" /> */}
       </View>
@@ -75,6 +89,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
   },
+
+  removeButton: {
+    backgroundColor: LIGHTMODE_COLORS.accent,
+    borderRadius: 12,
+    height: 24,
+    width: 24,
+    alignItems: "center",
+    marginLeft: 10,
+  },
+  buttonText: {
+    color: LIGHTMODE_COLORS.buttonText,
+    fontSize: 14,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
 });
 
 const darkStyles = StyleSheet.create({
@@ -117,5 +146,22 @@ const darkStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#ddd",
+  },
+  removeButton: {
+    backgroundColor: DARKMODE_COLORS.accent,
+    borderRadius: 12,
+    // paddingVertical: 12,
+    // paddingHorizontal: 16,
+    alignItems: "center",
+    width: 24,
+    height: 24,
+    // marginTop: 10,
+    marginLeft: 10,
+  },
+  buttonText: {
+    color: DARKMODE_COLORS.buttonText,
+    fontSize: 14,
+    fontWeight: "bold",
+    textTransform: "uppercase",
   },
 });

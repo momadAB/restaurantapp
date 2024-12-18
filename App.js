@@ -14,7 +14,13 @@ import { ThemeProvider } from "./src/context/ThemeContext";
 import MenuItemPage from "./src/screens/home/MenuItemPage";
 import { NavigationContainer } from "@react-navigation/native";
 
+import UserContext from "@context/UserContext";
+import CartContext from "@context/CartContext";
 import RootNavigator from "@navigation/RootNav/RootNavigator";
+import { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import getToken from "src/api/token";
 
 export default function App() {
   // Set defaultProps for Text
@@ -28,21 +34,51 @@ export default function App() {
   TextInput.defaultProps.style = {
     fontFamily: Platform.OS === "ios" ? "Georgia" : "NotoSerif",
   };
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (menuItem) => {
+    setCart((prevCart) => [...prevCart, menuItem]);
+  };
+
+  const removeFromCart = (menuItem) => {
+    setCart((prevCart) => {
+      const index = prevCart.findIndex((item) => item._id === menuItem._id);
+      if (index > -1) {
+        const newCart = [...prevCart];
+        newCart.splice(index, 1); // Remove only one item
+        return newCart;
+      }
+      return prevCart;
+    });
+  };
+
+  const checkAuth = async () => {
+    const token = await getToken();
+    setIsAuthenticated(!!token);
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const queryClient = new QueryClient();
+
   return (
-    <ThemeProvider>
-      <NavigationContainer>
-        <SafeAreaView style={styles.container}>
-          {/* <Header /> */}
-          <RootNavigator />
-          {/* <Home /> */}
-          {/* <Menu restaurant={restaurants[0]} /> */}
-          {/* <MenuItemPage menuItem={restaurants[0].menuItems[0]} /> */}
-          {/* <Cart /> */}
-          {/* <Register /> */}
-          {/* <Login /> */}
-        </SafeAreaView>
-      </NavigationContainer>
-    </ThemeProvider>
+    <CartContext.Provider value={[cart, addToCart, removeFromCart]}>
+      <UserContext.Provider value={[isAuthenticated, setIsAuthenticated]}>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <NavigationContainer>
+              <SafeAreaView style={styles.container}>
+                <RootNavigator />
+              </SafeAreaView>
+            </NavigationContainer>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </UserContext.Provider>
+    </CartContext.Provider>
   );
 }
 

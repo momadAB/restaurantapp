@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "@screens/auth/Login";
 import Register from "@screens/auth/Register";
 import ROUTE from "@routes/index";
 import { useTheme } from "@context/ThemeContext";
-import { Switch } from "react-native";
+import { View, TouchableOpacity, Animated, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const Stack = createNativeStackNavigator();
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const AuthNavigator = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -24,12 +26,27 @@ const AuthNavigator = () => {
         },
         headerTitleAlign: "center",
         headerRight: () => (
-          <Switch
-            value={isDarkMode}
-            onValueChange={toggleTheme}
-            thumbColor={"#aaa"}
-            trackColor={{ true: "#fff", false: "#ccc" }}
-          />
+          <View style={styles.headerRightContainer}>
+            <AnimatedTouchable
+              onPress={toggleTheme}
+              style={[
+                styles.toggleContainer,
+                {
+                  backgroundColor: isDarkMode ? "#2C2C3A" : "#F8F8F8",
+                  borderColor: isDarkMode ? "#ffffff" : "transparent",
+                  borderWidth: isDarkMode ? 1 : 0,
+                },
+              ]}
+            >
+              <Animated.View style={styles.iconContainer}>
+                {isDarkMode ? (
+                  <Ionicons name="moon" size={20} color="#FFF" />
+                ) : (
+                  <Ionicons name="sunny" size={20} color="#FFA500" />
+                )}
+              </Animated.View>
+            </AnimatedTouchable>
+          </View>
         ),
       }}
     >
@@ -40,3 +57,25 @@ const AuthNavigator = () => {
 };
 
 export default AuthNavigator;
+
+const styles = StyleSheet.create({
+  headerRightContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 10,
+  },
+  toggleContainer: {
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    padding: 2,
+    marginRight: 10,
+  },
+  iconContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

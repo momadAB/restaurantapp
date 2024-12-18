@@ -1,18 +1,18 @@
 import { StyleSheet, Text, View, Image, FlatList } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import MenuItem from "@components/Menu/MenuItem";
-
 import { useTheme } from "@context/ThemeContext";
+import { LIGHTMODE_COLORS, DARKMODE_COLORS } from "src/colors/colors";
+import CartContext from "@context/CartContext";
 
 const Menu = ({ route }) => {
   const { restaurant } = route.params;
-  const { name, category, rating, deliveryTime, image, menuItems } = restaurant;
+  const { name, category, rating, deliveryTime, image, items } = restaurant;
   const { isDarkMode } = useTheme();
+  const [cart, addToCart, removeFromCart] = useContext(CartContext);
 
-  // console.log(restaurant);
   return (
     <View style={isDarkMode ? darkStyles.container : styles.container}>
-      {/* Restaurant Header */}
       <View style={isDarkMode ? darkStyles.header : styles.header}>
         <Image
           source={{ uri: image }}
@@ -27,7 +27,7 @@ const Menu = ({ route }) => {
             {name}
           </Text>
           <Text style={isDarkMode ? darkStyles.category : styles.category}>
-            {category}
+            {category?.name}
           </Text>
           <View style={isDarkMode ? darkStyles.details : styles.details}>
             <Text style={isDarkMode ? darkStyles.rating : styles.rating}>
@@ -48,19 +48,18 @@ const Menu = ({ route }) => {
         Menu Items
       </Text>
 
-      {/* Menu Items */}
       <FlatList
-        data={menuItems}
+        data={items}
         renderItem={({ item }) => (
           <MenuItem
             name={item.name}
             price={item.price}
             image={item.image}
             description={item.description}
+            item={item}
           />
         )}
-        keyExtractor={(item) => item.id.toString()}
-        // style={styles.menuList}
+        keyExtractor={(item) => item._id.toString()}
       />
     </View>
   );
@@ -71,35 +70,37 @@ export default Menu;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    backgroundColor: "#f8f8f8",
+    backgroundColor: LIGHTMODE_COLORS.background,
   },
   header: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
-    elevation: 3,
+    backgroundColor: LIGHTMODE_COLORS.primary,
+    borderRadius: 12,
+    margin: 16,
+    padding: 16,
+    shadowColor: LIGHTMODE_COLORS.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
     flexDirection: "row",
   },
   image: {
     width: 100,
     height: 100,
-    borderRadius: 10,
-    marginRight: 10,
+    borderRadius: 12,
+    marginRight: 12,
   },
   headerInfo: {
     flex: 1,
     justifyContent: "space-around",
   },
   restaurantName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
+    color: LIGHTMODE_COLORS.textPrimary,
   },
   category: {
-    fontSize: 14,
-    color: "#888",
+    fontSize: 16,
+    color: LIGHTMODE_COLORS.textSecondary,
   },
   details: {
     flexDirection: "row",
@@ -108,57 +109,58 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    color: "#444",
+    color: LIGHTMODE_COLORS.accent,
   },
   deliveryTime: {
     fontSize: 14,
-    color: "#444",
+    color: LIGHTMODE_COLORS.textSecondary,
   },
   itemsTitleText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: LIGHTMODE_COLORS.textPrimary,
     marginLeft: 20,
-    marginTop: 10,
+    marginVertical: 10,
   },
-
   menuList: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
 });
 
 const darkStyles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    backgroundColor: "#2C2C3A",
+    backgroundColor: DARKMODE_COLORS.background,
   },
   header: {
-    backgroundColor: "transparent",
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
-    // elevation: 3,
+    backgroundColor: DARKMODE_COLORS.primary,
+    borderRadius: 12,
+    margin: 16,
+    padding: 16,
+    shadowColor: DARKMODE_COLORS.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
     flexDirection: "row",
   },
   image: {
     width: 100,
     height: 100,
-    borderRadius: 10,
-    marginRight: 10,
+    borderRadius: 12,
+    marginRight: 12,
   },
   headerInfo: {
     flex: 1,
     justifyContent: "space-around",
   },
   restaurantName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#ddd",
+    color: DARKMODE_COLORS.textPrimary,
   },
   category: {
-    fontSize: 14,
-    color: "#ccc",
+    fontSize: 16,
+    color: DARKMODE_COLORS.textSecondary,
   },
   details: {
     flexDirection: "row",
@@ -167,20 +169,20 @@ const darkStyles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    color: "#ccc",
+    color: DARKMODE_COLORS.accent,
   },
   deliveryTime: {
     fontSize: 14,
-    color: "#ccc",
+    color: DARKMODE_COLORS.textSecondary,
   },
   itemsTitleText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#ddd",
+    color: DARKMODE_COLORS.textPrimary,
     marginLeft: 20,
-    marginTop: 10,
+    marginVertical: 10,
   },
   menuList: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
 });

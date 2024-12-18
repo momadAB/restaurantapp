@@ -1,22 +1,59 @@
-import React from "react";
-import { FlatList, StyleSheet, Text } from "react-native";
-
-import restaurantCategories from "../../../data/CategoriesData";
-import restaurants from "../../../data/RestaurantsData";
-
+import React, { useState } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CategoryItem from "@components/Home/CategoryItem";
 import RestaurantItem from "@components/Home/RestaurantItem";
-
 import { useTheme } from "@context/ThemeContext";
+import { useQuery } from "@tanstack/react-query";
+import { getAllCategories, getAllRestaurants } from "src/api/action";
+import { LIGHTMODE_COLORS, DARKMODE_COLORS } from "src/colors/colors";
 
 const Home = () => {
   const { isDarkMode } = useTheme();
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  const { data: restaurantCategories, isLoading: isLoadingCategories } =
+    useQuery({ queryKey: ["categories"], queryFn: getAllCategories });
+  const { data: restaurants, isLoading: isLoadingRestaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: getAllRestaurants,
+  });
+
+  const filteredRestaurants = selectedCategoryId
+    ? restaurants.filter(
+        (restaurant) => restaurant.category?._id === selectedCategoryId
+      )
+    : restaurants;
+
+  if (isLoadingCategories || isLoadingRestaurants) {
+    return (
+      <View
+        style={
+          isDarkMode ? darkStyles.loadingContainer : styles.loadingContainer
+        }
+      >
+        <ActivityIndicator
+          size="large"
+          color={isDarkMode ? DARKMODE_COLORS.accent : LIGHTMODE_COLORS.accent}
+        />
+      </View>
+    );
+  }
+
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategoryId((prevCategoryId) =>
+      prevCategoryId === categoryId ? null : categoryId
+    );
+  };
 
   return (
     <SafeAreaView style={isDarkMode ? darkStyles.root : styles.root}>
-      {/* <Header /> */}
-      {/* <View style={{ flex: 1 }}> */}
       <Text
         style={isDarkMode ? darkStyles.categoriesText : styles.categoriesText}
       >
@@ -27,42 +64,43 @@ const Home = () => {
           isDarkMode ? darkStyles.horizontalScroll : styles.horizontalScroll
         }
         data={restaurantCategories}
-        horizontal={true} // Ensure horizontal scrolling
+        horizontal
+        showsHorizontalScrollIndicator={false}
         renderItem={({ item: category }) => (
           <CategoryItem
-            id={category.id}
-            categoryName={category.categoryName}
-            categoryImage={category.categoryImage}
+            id={category._id}
+            categoryName={category.name}
+            categoryImage={category.image}
+            isSelected={selectedCategoryId === category._id}
+            onPress={() => handleCategorySelect(category._id)}
           />
         )}
-        keyExtractor={(item) => item.id.toString()} // Unique key extractor
+        keyExtractor={(item) => item._id.toString()}
       />
-      {/* </View> */}
-      {/* <View style={{ flex: 10 }}> */}
       <Text
-        style={isDarkMode ? darkStyles.categoriesText : styles.categoriesText}
+        style={isDarkMode ? darkStyles.restaurantsText : styles.restaurantsText}
       >
         Restaurants
       </Text>
       <FlatList
         style={isDarkMode ? darkStyles.list : styles.list}
-        data={restaurants}
+        data={filteredRestaurants}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item: restaurant }) => (
           <RestaurantItem
-            key={restaurant.id}
-            id={restaurant.id}
+            key={restaurant._id}
+            id={restaurant._id}
             name={restaurant.name}
             image={restaurant.image}
             rating={restaurant.rating}
             deliveryTime={restaurant.deliveryTime}
-            category={restaurant.category}
-            firstItemImage={restaurant.menuItems[0].image}
+            category={restaurant.category?.name}
+            firstItemImage={restaurant.items[0]?.image}
             restaurant={restaurant}
           />
         )}
-        keyExtractor={(item) => item.id.toString()} // Unique key extractor
+        keyExtractor={(item) => item._id.toString()}
       />
-      {/* </View> */}
     </SafeAreaView>
   );
 };
@@ -72,70 +110,73 @@ export default Home;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#f8f8f8", // Dark mode background color
+    backgroundColor: LIGHTMODE_COLORS.background,
+    paddingHorizontal: 16,
   },
   categoriesText: {
-    color: "black", // Text color for categories
+    color: LIGHTMODE_COLORS.textPrimary,
     marginTop: 10,
-    marginLeft: 20,
-    fontSize: 20,
+    marginBottom: 10,
+    fontSize: 22,
     fontWeight: "bold",
   },
   restaurantsText: {
-    color: "black", // Text color for categories
-    marginTop: 10,
-    marginLeft: 20,
-    fontSize: 20,
+    color: LIGHTMODE_COLORS.textPrimary,
+    marginTop: 20,
+    marginBottom: 10,
+    fontSize: 22,
     fontWeight: "bold",
   },
   horizontalScroll: {
     flexDirection: "row",
-    height: 70,
-    marginTop: 20,
-    marginBottom: 20,
-    padding: 10,
-    marginRight: 50,
-    backgroundColor: "#f8f8f8", // Light mode background color
+    height: 100,
+    // marginBottom: 20,
+    flexGrow: 0,
   },
   list: {
-    // flex: 6,
-    backgroundColor: "#f8f8f8",
-    paddingRight: 20,
-    margin: 0,
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: LIGHTMODE_COLORS.background,
   },
 });
 
 const darkStyles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#2C2C3A", // Dark mode background color
+    backgroundColor: DARKMODE_COLORS.background,
+    paddingHorizontal: 16,
   },
   categoriesText: {
-    color: "#fff", // Text color for categories
+    color: DARKMODE_COLORS.textPrimary,
     marginTop: 10,
-    marginLeft: 20,
-    fontSize: 20,
+    marginBottom: 10,
+    fontSize: 22,
     fontWeight: "bold",
   },
   restaurantsText: {
-    color: "black", // Text color for categories
-    marginTop: 10,
-    marginLeft: 20,
-    fontSize: 20,
+    color: DARKMODE_COLORS.textPrimary,
+    marginTop: 20,
+    marginBottom: 10,
+    fontSize: 22,
     fontWeight: "bold",
   },
   horizontalScroll: {
     flexDirection: "row",
-    height: 70,
-    marginTop: 20,
-    marginBottom: 20,
-    padding: 10,
-    marginRight: 50,
-    backgroundColor: "#2C2C3A", // Dark mode background color
+    height: 100,
+    flexGrow: 0,
+    // marginBottom: 20,
   },
   list: {
-    backgroundColor: "#2C2C3A",
-    paddingRight: 20,
-    margin: 0,
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: DARKMODE_COLORS.background,
   },
 });

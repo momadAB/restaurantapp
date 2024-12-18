@@ -1,42 +1,54 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Register from "@screens/auth/Register";
 import { useTheme } from "@context/ThemeContext";
 import { Switch } from "react-native";
 import HomeNavigator from "@navigation/HomeNav/HomeNav";
 import AuthNavigator from "@navigation/AuthNav/AuthNavigation";
 
-const Stack = createNativeStackNavigator();
+import { Ionicons } from "@expo/vector-icons";
+import ROUTE from "@routes/index";
+import UserContext from "@context/UserContext";
+
+const Tab = createBottomTabNavigator();
 
 const RootNavigator = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode } = useTheme();
+  const [isAuthenticated, setIsAuthenticated] = useContext(UserContext);
 
   return (
-    <Stack.Navigator
-      initialRouteName="AuthNav"
-      screenOptions={{
+    <Tab.Navigator
+      initialRouteName={ROUTE.NAVPAGES.AUTHNAV}
+      screenOptions={({ route }) => ({
         headerShown: false,
         headerStyle: {
-          backgroundColor: isDarkMode ? "#2C2C3A" : "#f8f8f8", // Dark or light header background
+          backgroundColor: isDarkMode ? "#1E1E2E" : "#FFFFFF",
         },
-        headerTintColor: isDarkMode ? "#fff" : "#000", // Text color for the header
+        headerTintColor: isDarkMode ? "#FFFFFF" : "#000000",
         headerTitleStyle: {
           fontWeight: "bold",
         },
-        headerTitleAlign: "center",
-        headerRight: () => (
-          <Switch
-            value={isDarkMode}
-            onValueChange={toggleTheme}
-            thumbColor={"#aaa"}
-            trackColor={{ true: "#fff", false: "#ccc" }}
-          />
-        ),
-      }}
+        tabBarStyle: { display: "none" },
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === ROUTE.NAVPAGES.AUTHNAV) {
+            iconName = "log-in-outline";
+          } else if (route.name === ROUTE.NAVPAGES.HOMENAV) {
+            iconName = "home-outline";
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
     >
-      <Stack.Screen name={"AuthNav"} component={AuthNavigator} />
-      <Stack.Screen name={"HomeNav"} component={HomeNavigator} />
-    </Stack.Navigator>
+      {isAuthenticated ? (
+        <Tab.Screen name={ROUTE.NAVPAGES.HOMENAV} component={HomeNavigator} />
+      ) : (
+        <Tab.Screen name={ROUTE.NAVPAGES.AUTHNAV} component={AuthNavigator} />
+      )}
+      {/* <Tab.Screen name={ROUTE.NAVPAGES.AUTHNAV} component={AuthNavigator} />
+      <Tab.Screen name={ROUTE.NAVPAGES.HOMENAV} component={HomeNavigator} /> */}
+    </Tab.Navigator>
   );
 };
 
